@@ -310,8 +310,8 @@ app.post('/api/create-checkout-session', async (req, res) => {
         }
       ],
       mode: 'payment',
-      success_url: `http://127.0.0.1:5500/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `http://127.0.0.1:5500/index.html`,
+      success_url: `https://coorg-premium-stay.onrender.com/success.html?session_id={CHECKOUT_SESSION_ID}`,
+       cancel_url: `https://coorg-premium-stay.onrender.com/index.html`,
       metadata: { 
         propertyId, 
         checkIn, 
@@ -360,10 +360,7 @@ app.get('/api/calendar.ics', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+
 app.get('/api/booked-dates', (req, res) => {
   const filePath = path.join(__dirname, 'bookings.json');
   if (!fs.existsSync(filePath)) {
@@ -380,4 +377,12 @@ app.get('/api/booked-dates', (req, res) => {
   }));
 
   res.json(bookedRanges);
+});
+// all your routes above this
+
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
