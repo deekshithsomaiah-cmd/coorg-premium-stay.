@@ -7,7 +7,9 @@ const ical = require('ical-generator').default;
 const nodemailer = require('nodemailer');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
+
 const app = express();
+app.use(cors());
 
 // Configure Nodemailer Transporter
 const transporter = nodemailer.createTransport({
@@ -84,20 +86,11 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   }
   res.json({ received: true });
 });
-
-// Catch-all route for undefined endpoints
-app.use((req, res) => {
-  res.status(404).json({ error: "API endpoint not found." });
-});
-
-// Centralized error handler
-app.use((err, req, res, next) => {
-  console.error('Unhandled Server Error:', err.stack);
-  res.status(500).json({ error: "Internal Server Error." });
-});
-
 app.use(express.json());
-app.use(cors());
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Backend is connected!' });
+});
+
 app.use(express.static(__dirname));
 
 const PROPERTY_DATA = {
@@ -225,7 +218,8 @@ app.post('/api/create-checkout-session', async (req, res) => {
     console.error('Stripe Error:', error);
     res.status(500).json({ error: "Failed to process payment request. Please try again." });
   }
-});// Enhanced Checkout Endpoint with Input Validation
+});
+// Enhanced Checkout Endpoint with Input Validation
 app.post('/api/create-checkout-session', async (req, res) => {
   try {
     const { propertyId, checkIn, checkOut, guests } = req.body;
@@ -360,8 +354,8 @@ app.get('/api/calendar.ics', (req, res) => {
   });
 });
 
-
 app.get('/api/booked-dates', (req, res) => {
+  console.log("BOOKED DATES ROUTE HIT");
   const filePath = path.join(__dirname, 'bookings.json');
   if (!fs.existsSync(filePath)) {
     return res.json([]);
@@ -375,13 +369,20 @@ app.get('/api/booked-dates', (req, res) => {
     checkIn: b.checkIn,
     checkOut: b.checkOut
   }));
+  
 
   res.json(bookedRanges);
 });
+
 // all your routes above this
 
 
 const PORT = process.env.PORT || 3000;
+
+// Catch-all route for undefined endpoints
+app.use((req, res) => {
+  res.status(404).json({ error: "API endpoint not found." });
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

@@ -86,12 +86,21 @@ document.addEventListener('DOMContentLoaded', () => {
   fetch('http://localhost:3000/api/booked-dates')
     .then(res => res.json())
     .then(bookedRanges => {
-      const disabledDates = bookedRanges.map(range => ({
-        from: range.checkIn,
-        to: range.checkOut
-      }));
+   const disabledDates = bookedRanges.flatMap(range => {
+  const dates = [];
+  let current = new Date(range.checkIn);
+  const end = new Date(range.checkOut);
+
+  while (current < end) {
+    dates.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+
+  return dates;
+});
       
       fp.set('disable', disabledDates);
+      console.log("DISABLED DATES:", disabledDates);
     })
     .catch(err => console.error('Could not load booked dates:', err));
 
@@ -109,7 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Handle Checkout Click
   bookBtn.addEventListener('click', async () => {
-    if (!selectedCheckIn || !selectedCheckOut) return;
+   if (!selectedCheckIn || !selectedCheckOut || !guestSelect.value) {
+  alert("Please select the number of guests.");
+  return;
+}
 
     bookBtn.innerText = "Processing Reservation...";
     bookBtn.disabled = true;
@@ -122,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
           propertyId: 'canopy-loft',
           checkIn: selectedCheckIn,
           checkOut: selectedCheckOut,
-          guests: parseInt(guestSelect.value, 10) || 1
+          guests: parseInt(guestSelect.value, 10)
         })
       });
 
