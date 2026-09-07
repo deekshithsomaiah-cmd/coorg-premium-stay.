@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Fetch blocked dates and update calendar instance
-  fetch('http://localhost:3000/api/booked-dates')
+  fetch('https://coorg-premium-stay-4.onrender.com/api/booked-dates')
     .then(res => res.json())
     .then(bookedRanges => {
    const disabledDates = bookedRanges.flatMap(range => {
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bookBtn.disabled = true;
 
     try {
-      const response = await fetch('http://localhost:3000/api/create-checkout-session', {
+      const response = await fetch('https://coorg-premium-stay-4.onrender.com/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
