@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coorg | Eco-Resort & Luxury Sanctuary</title>
+
+  <!-- Google Fonts for Premium Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Flatpickr CSS for Custom Styling -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+
+  <style>
+    :root {
+      --bg-dark: #0b110d;
+      --card-glass: rgba(22, 32, 26, 0.65);
+      --border-glass: rgba(255, 255, 255, 0.12);
+      --accent-gold: #d4a373;
+      --accent-gold-hover: #e5b88a;
+      --text-main: #f4f1de;
+      --text-muted: #a3b18a;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: linear-gradient(180deg, rgba(11, 17, 13, 0.5) 0%, rgba(11, 17, 13, 0.85) 100%),
+                  url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat fixed;
+    }
+
+    /* Header & Navigation */
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 1.8rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(11, 17, 13, 0.4);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 1000;
+    }
+
+    .logo {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      letter-spacing: 0.35rem;
+      text-transform: uppercase;
+      font-weight: 400;
+      color: var(--text-main);
+      text-decoration: none;
+    }
+
+    nav {
+      display: flex;
+      gap: 3rem;
+    }
+
+    nav a {
+      color: rgba(255, 255, 255, 0.75);
+      text-decoration: none;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 400;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: var(--accent-gold);
+    }
+
+    /* Main Container */
+    main {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8rem 4rem 4rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      gap: 4rem;
+    }
+
+    /* Left Hero Content */
+    .hero-text {
+      flex: 1;
+      max-width: 650px;
+    }
+
+    .hero-tag {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--accent-gold);
+      margin-bottom: 1.5rem;
+      display: inline-block;
+    }
+
+    .hero-title {
+      font-family: var(--font-serif);
+      font-size: 4.2rem;
+      line-height: 1.05;
+      font-weight: 300;
+      letter-spacing: 1px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--accent-gold);
+    }
+
+    .hero-description {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1.8;
+      font-weight: 300;
+      margin-bottom: 2rem;
+    }
+
+    /* Floating Feature Badge */
+    .badge-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1.25rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-glass);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+    }
+
+    .badge-card img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .badge-card span {
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Right Glassmorphism Booking Card */
+    .booking-card {
+      width: 440px;
+      background: var(--card-glass);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid var(--border-glass);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .booking-card:hover {
+      border-color: rgba(212, 163, 115, 0.3);
+    }
+
+    .booking-header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 1.25rem;
+    }
+
+    .booking-header h2 {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+    }
+
+    .price-tag {
+      font-size: 1.4rem;
+      color: var(--accent-gold);
+      font-weight: 600;
+      margin-top: 0.3rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+    }
+
+    input, select {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      padding: 0.95rem 1.2rem;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-family: var(--font-sans);
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent-gold);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 15px rgba(212, 163, 115, 0.15);
+    }
+
+    select option {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+    }
+
+    /* Dynamic Price Breakdown */
+    .price-summary {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin: 1.75rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .summary-row.total {
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 1.15rem;
+      padding-top: 0.5rem;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin: 0.2rem 0;
+    }
+
+    .hidden { display: none; }
+
+    /* Premium Button */
+    .btn-primary {
+      width: 100%;
+      background: var(--accent-gold);
+      color: #0b110d;
+      border: none;
+      padding: 1.1rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 25px rgba(212, 163, 115, 0.25);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-gold-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px rgba(212, 163, 115, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Custom Flatpickr Dark Theme Tweaks */
+    .flatpickr-calendar {
+      background: #16201a !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8) !important;
+      border-radius: 16px !important;
+    }
+    .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
+      background: var(--accent-gold) !important;
+      border-color: var(--accent-gold) !important;
+      color: #000 !important;
+      font-weight: 600;
+    }
+    .flatpickr-day.inRange {
+      background: rgba(212, 163, 115, 0.2) !important;
+      box-shadow: -5px 0 0 rgba(212, 163, 115, 0.2), 5px 0 0 rgba(212, 163, 115, 0.2) !important;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      main { flex-direction: column; padding: 7rem 2rem 3rem; }
+      .hero-text { max-width: 100%; text-align: center; }
+      .hero-title { font-size: 3rem; }
+      .booking-card { width: 100%; max-width: 500px; }
+      header { padding: 1.2rem 2rem; }
+      nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header>
+    <a href="#" class="logo">COORG</a>
+    <nav>
+      <a href="#discover">Discover</a>
+      <a href="#about">About Us</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <!-- Hero & Reservation Container -->
+  <main>
+    <!-- Left Copy -->
+    <div class="hero-text">
+      <span class="hero-tag">Private Eco-Resort</span>
+      <h1 class="hero-title">Escape to the peace, <em>awaken</em> in the forest.</h1>
+      <p class="hero-description">
+        Coorg is where earth meets sky—a secluded sanctuary hidden beneath the stars, crafted for travelers who demand understated elegance and pristine nature.
+      </p>
+     <div class="badge-card" style="cursor: pointer;" onclick="alert('Feature Preview: 3 Bedrooms, Heated Pool, Forest View Access')">
+  <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=200&q=80" alt="Suites">
+  <span>Eco-Architected Forest Suites ↗</span>
+</div>
+
+    <!-- Right Booking Widget -->
+    <div class="booking-card">
+     <div class="booking-header">
+  <h2>Reserve Your Stay</h2>
+  <div class="price-tag">₹2,700 <span style="font-size:0.85rem; font-weight:300; color: var(--text-muted);">/ night</span></div>
+</div>
+
+      <!-- Date Selection -->
+      <div class="form-group">
+        <label for="date-range">Dates of Stay</label>
+        <input type="text" id="date-picker" placeholder="Check-in → Check-out">
+      </div>
+
+      <!-- Guest Selector -->
+      <div class="form-group">
+  <label for="guests">Guests</label>
+  <select id="guests">
+    <option value="" selected disabled>Select Guests</option>
+    <option value="1">1 Guest</option>
+    <option value="2">2 Guests</option>
+    <option value="3">3 Guests (+₹500/night)</option>
+    <option value="4">4 Guests (+₹1,000/night)</option>
+  </select>
+</div>
+<!-- Price Breakdown -->
+<div id="price-summary" class="price-summary hidden">
+  <div class="summary-row">
+    <span id="night-rate-label">₹2,700 × 0 nights</span>
+    <span id="subtotal-amount">₹0</span>
+  </div>
+  <div id="extra-guest-row" class="summary-row hidden">
+    <span>Extra Guest Surcharge</span>
+    <span id="extra-guest-fee">₹0</span>
+  </div>
+  <div class="summary-row">
+    <span>Sanitation & Cleaning</span>
+    <span id="cleaning-fee">₹500</span>
+  </div>
+  <div class="summary-row">
+    <span>Resort Tax (18% GST)</span>
+    <span id="tax-amount">₹0</span>
+  </div>
+  <hr>
+  <div class="summary-row total">
+    <span>Total Investment</span>
+    <span id="total-amount">₹0</span>
+  </div>
+</div>
+
+<button id="book-now-btn" class="btn-primary" disabled>Select Dates to Book</button>
+  <!-- External Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>
