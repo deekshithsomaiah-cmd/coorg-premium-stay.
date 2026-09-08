@@ -4,52 +4,61 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const ical = require('ical-generator').default;
-const nodemailer = require('nodemailer');
+
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 
-const app = express();
-app.use(cors());
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  requireTLS: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const { Resend } = require('resend');
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 
 // Function to Send Email Receipts
 async function sendConfirmationEmail(booking) {
-  const mailOptions = {
-    from: `"COORG Eco-Resort" <${process.env.EMAIL_USER}>`,
-    to: booking.customerEmail,
-    subject: `Reservation Confirmed - COORG Eco-Resort (${booking.checkIn})`,
-    html: `
-      <div style="font-family: Arial, sans-serif; background-color: #0b110d; color: #f4f1de; padding: 30px; border-radius: 12px;">
-        <h2 style="color: #d4a373;">Reservation Confirmed 🎉</h2>
-        <p>Dear <strong>${booking.customerName || 'Valued Guest'}</strong>,</p>
-        <p>Thank you for choosing <strong>COORG Eco-Resort</strong>. Your reservation details are below:</p>
-        
-        <table style="width: 100%; border-collapse: collapse; margin: 20px 0; color: #f4f1de;">
-          <tr><td style="padding: 8px; border-bottom: 1px solid #333;"><strong>Check-in:</strong></td><td style="padding: 8px; border-bottom: 1px solid #333;">${booking.checkIn}</td></tr>
-          <tr><td style="padding: 8px; border-bottom: 1px solid #333;"><strong>Check-out:</strong></td><td style="padding: 8px; border-bottom: 1px solid #333;">${booking.checkOut}</td></tr>
-          <tr><td style="padding: 8px; border-bottom: 1px solid #333;"><strong>Guests:</strong></td><td style="padding: 8px; border-bottom: 1px solid #333;">${booking.guests}</td></tr>
-          <tr><td style="padding: 8px; border-bottom: 1px solid #333;"><strong>Total Paid:</strong></td><td style="padding: 8px; border-bottom: 1px solid #333; color: #d4a373;"><strong>₹${booking.amountPaid.toLocaleString('en-IN')}</strong></td></tr>
-        </table>
-
-        <p>We look forward to hosting your escape into nature.</p>
-        <hr style="border-color: #333;">
-        <p style="font-size: 0.8rem; color: #a3b18a;">COORG Eco-Resort | Private Sanctuary</p>
-      </div>
-    `
-  };
-
   try {
-    await transporter.sendMail(mailOptions);
+    const { data, error } = await resend.emails.send({
+      from: 'COORG Eco-Resort <onboarding@resend.dev>',
+      to: [booking.customerEmail],
+      subject: `Reservation Confirmed - COORG Eco-Resort (${booking.checkIn})`,
+      html: `
+        <div style="font-family: Arial, sans-serif; background-color: #0b110d; color: #f4f1de; padding: 30px; border-radius: 12px;">
+          <h2 style="color: #d4a373;">Reservation Confirmed 🎉</h2>
+          <p>Dear <strong>${booking.customerName || 'Valued Guest'}</strong>,</p>
+          <p>Thank you for choosing <strong>COORG Eco-Resort</strong>. Your reservation details are below:</p>
+
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0; color: #f4f1de;">
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #333;"><strong>Check-in:</strong></td>
+              <td style="padding: 8px; border-bottom: 1px solid #333;">${booking.checkIn}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #333;"><strong>Check-out:</strong></td>
+              <td style="padding: 8px; border-bottom: 1px solid #333;">${booking.checkOut}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #333;"><strong>Guests:</strong></td>
+              <td style="padding: 8px; border-bottom: 1px solid #333;">${booking.guests}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #333;"><strong>Total Paid:</strong></td>
+              <td style="padding: 8px; border-bottom: 1px solid #333; color: #d4a373;">
+                <strong>₹${booking.amountPaid.toLocaleString('en-IN')}</strong>
+              </td>
+            </tr>
+          </table>
+
+          <p>We look forward to hosting your escape into nature.</p>
+          <hr style="border-color: #333;">
+          <p style="font-size: 0.8rem; color: #a3b18a;">COORG Eco-Resort | Private Sanctuary</p>
+        </div>
+      `
+    });
+
+    if (error) {
+      console.error('Failed to send email:', error);
+      return;
+    }
+
     console.log(`Confirmation email sent to ${booking.customerEmail}`);
   } catch (err) {
     console.error('Failed to send email:', err);
