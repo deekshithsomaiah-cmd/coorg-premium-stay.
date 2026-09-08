@@ -2,8 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
+const fs = require('fs');
+
 const path = require('path');
 const ical = require('ical-generator').default;
+
+const app = express();
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -52,6 +56,7 @@ async function sendConfirmationEmail(booking) {
           <p style="font-size: 0.8rem; color: #a3b18a;">COORG Eco-Resort | Private Sanctuary</p>
         </div>
       `
+
     });
 
     if (error) {
