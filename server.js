@@ -117,15 +117,42 @@ const PROPERTY_DATA = {
 
 function saveBookingToDatabase(bookingData) {
   const filePath = path.join(__dirname, 'bookings.json');
+
+  console.log("Attempting to save booking...");
+  console.log("Booking ID:", bookingData.bookingId);
+  console.log("Customer:", bookingData.customerName);
+  console.log("Amount:", bookingData.amountPaid);
+
   fs.readFile(filePath, 'utf8', (err, data) => {
     let bookings = [];
+
     if (!err && data) {
-      try { bookings = JSON.parse(data); } catch (e) { bookings = []; }
+      try {
+        bookings = JSON.parse(data);
+      } catch (e) {
+        console.error("Could not parse bookings.json:", e.message);
+        bookings = [];
+      }
     }
+
     bookings.push(bookingData);
-    fs.writeFile(filePath, JSON.stringify(bookings, null, 2), (err) => {
-      if (!err) console.log(`Saved new booking: ${bookingData.bookingId}`);
-    });
+
+    fs.writeFile(
+      filePath,
+      JSON.stringify(bookings, null, 2),
+      'utf8',
+      (writeErr) => {
+        if (writeErr) {
+          console.error("BOOKING SAVE FAILED:", writeErr.message);
+          return;
+        }
+
+        console.log("=================================");
+        console.log("BOOKING SAVED SUCCESSFULLY");
+        console.log("Booking ID:", bookingData.bookingId);
+        console.log("=================================");
+      }
+    );
   });
 }
 
