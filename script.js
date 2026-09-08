@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bookBtn.disabled = true;
 
     try {
-      const response = await fetch('https://coorg-premium-stay-4.onrender.com/api/create-checkout-session', {
+      const response = await fetch('https://coorg-premium-stay.onrender.com/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
