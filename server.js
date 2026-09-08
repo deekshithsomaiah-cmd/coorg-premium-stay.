@@ -1,9 +1,8 @@
 require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
-const fs = require('fs');
-
 const path = require('path');
 const ical = require('ical-generator').default;
 
@@ -11,12 +10,8 @@ const app = express();
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-
 const { Resend } = require('resend');
-
 const resend = new Resend(process.env.RESEND_API_KEY);
-
-
 // Function to Send Email Receipts
 async function sendConfirmationEmail(booking) {
   try {
