@@ -93,8 +93,7 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
       guests: session.metadata.guests,
       bookedAt: new Date().toISOString()
     };
-
-    saveBookingToDatabase(newBooking);
+    await saveBookingToDatabase(newBooking);
     sendConfirmationEmail(newBooking); // Send email automatically
   }
   res.json({ received: true });
@@ -117,45 +116,39 @@ const PROPERTY_DATA = {
 };
 
 
-function saveBookingToDatabase(bookingData) {
-  const filePath = path.join(__dirname, 'bookings.json');
-
-  console.log("Attempting to save booking...");
+async function saveBookingToDatabase(bookingData) {
+  console.log("Attempting to save booking to Supabase...");
   console.log("Booking ID:", bookingData.bookingId);
   console.log("Customer:", bookingData.customerName);
   console.log("Amount:", bookingData.amountPaid);
 
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    let bookings = [];
-
-    if (!err && data) {
-      try {
-        bookings = JSON.parse(data);
-      } catch (e) {
-        console.error("Could not parse bookings.json:", e.message);
-        bookings = [];
+  const { data, error } = await supabase
+    .from('bookings')
+    .insert([
+      {
+        booking_id: bookingData.bookingId,
+        customer_email: bookingData.customerEmail,
+        customer_name: bookingData.customerName,
+        amount_paid: bookingData.amountPaid,
+        currency: bookingData.currency,
+        property_id: bookingData.propertyId,
+        check_in: bookingData.checkIn,
+        check_out: bookingData.checkOut,
+        guests: bookingData.guests,
+        booked_at: bookingData.bookedAt || new Date().toISOString()
       }
-    }
+    ])
+    .select();
 
-    bookings.push(bookingData);
+  if (error) {
+    console.error("BOOKING SAVE FAILED:", error.message);
+    return;
+  }
 
-    fs.writeFile(
-      filePath,
-      JSON.stringify(bookings, null, 2),
-      'utf8',
-      (writeErr) => {
-        if (writeErr) {
-          console.error("BOOKING SAVE FAILED:", writeErr.message);
-          return;
-        }
-
-        console.log("=================================");
-        console.log("BOOKING SAVED SUCCESSFULLY");
-        console.log("Booking ID:", bookingData.bookingId);
-        console.log("=================================");
-      }
-    );
-  });
+  console.log("=================================");
+  console.log("BOOKING SAVED TO SUPABASE");
+  console.log("Booking ID:", bookingData.bookingId);
+  console.log("=================================");
 }
 
 // Enhanced Checkout Endpoint with Input Validation
@@ -197,23 +190,34 @@ app.post('/api/create-checkout-session', async (req, res) => {
     if (nights <= 0) {
       return res.status(400).json({ error: "Check-out date must be after check-in date." });
     }
+   // Check for double bookings against stored reservations
+const { data: existingBookings, error: bookingCheckError } = await supabase
+  .from('bookings')
+  .select('check_in, check_out');
 
-    // Check for double bookings against stored reservations
-    const filePath = path.join(__dirname, 'bookings.json');
-    if (fs.existsSync(filePath)) {
-      const rawData = fs.readFileSync(filePath, 'utf8');
-      const existingBookings = rawData ? JSON.parse(rawData) : [];
-      
-      const isOverlap = existingBookings.some(b => {
-        const existingStart = new Date(b.checkIn);
-        const existingEnd = new Date(b.checkOut);
-        return startDate < existingEnd && endDate > existingStart;
-      });
+if (bookingCheckError) {
+  console.error(
+    "Could not check existing bookings:",
+    bookingCheckError.message
+  );
 
-      if (isOverlap) {
-        return res.status(409).json({ error: "Selected dates overlap with an existing reservation." });
-      }
-    }
+  return res.status(500).json({
+    error: "Could not check booking availability."
+  });
+}
+
+const isOverlap = existingBookings.some(b => {
+  const existingStart = new Date(b.check_in);
+  const existingEnd = new Date(b.check_out);
+
+  return startDate < existingEnd && endDate > existingStart;
+});
+
+if (isOverlap) {
+  return res.status(409).json({
+    error: "Selected dates overlap with an existing reservation."
+  });
+}
 
     // Pricing calculation
     const guestSurcharge = parsedGuests > 2 ? (parsedGuests - 2) * property.extraGuestFee : 0;
@@ -299,23 +303,34 @@ app.post('/api/create-checkout-session', async (req, res) => {
       return res.status(400).json({ error: "Check-out date must be after check-in date." });
     }
 
-    // Check for double bookings against stored reservations
-    const filePath = path.join(__dirname, 'bookings.json');
-    if (fs.existsSync(filePath)) {
-      const rawData = fs.readFileSync(filePath, 'utf8');
-      const existingBookings = rawData ? JSON.parse(rawData) : [];
-      
-      const isOverlap = existingBookings.some(b => {
-        const existingStart = new Date(b.checkIn);
-        const existingEnd = new Date(b.checkOut);
-        return startDate < existingEnd && endDate > existingStart;
-      });
+// Check for double bookings against stored reservations
+const { data: existingBookings, error: bookingCheckError } = await supabase
+  .from('bookings')
+  .select('check_in, check_out');
 
-      if (isOverlap) {
-        return res.status(409).json({ error: "Selected dates overlap with an existing reservation." });
-      }
-    }
+if (bookingCheckError) {
+  console.error(
+    "Could not check existing bookings:",
+    bookingCheckError.message
+  );
 
+  return res.status(500).json({
+    error: "Could not check booking availability."
+  });
+}
+
+const isOverlap = existingBookings.some(b => {
+  const existingStart = new Date(b.check_in);
+  const existingEnd = new Date(b.check_out);
+
+  return startDate < existingEnd && endDate > existingStart;
+});
+
+if (isOverlap) {
+  return res.status(409).json({
+    error: "Selected dates overlap with an existing reservation."
+  });
+}
     // Pricing calculation
     const guestSurcharge = parsedGuests > 2 ? (parsedGuests - 2) * property.extraGuestFee : 0;
     const nightlyPrice = property.nightlyRate + guestSurcharge;
@@ -361,57 +376,116 @@ app.post('/api/create-checkout-session', async (req, res) => {
   }
 });
 
-app.get('/api/admin/bookings', (req, res) => {
-  const filePath = path.join(__dirname, 'bookings.json');
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err || !data) return res.json([]);
-    try { res.json(JSON.parse(data)); } catch (e) { res.json([]); }
-  });
+app.get('/api/admin/bookings', async (req, res) => {
+  console.log("ADMIN BOOKINGS ROUTE HIT");
+
+  try {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .order('check_in', { ascending: true });
+
+    if (error) {
+      console.error(
+        "Could not load admin bookings from Supabase:",
+        error.message
+      );
+
+      return res.status(500).json({
+        error: "Could not load bookings."
+      });
+    }
+
+    res.json(data);
+
+  } catch (err) {
+    console.error("Admin bookings error:", err.message);
+
+    res.status(500).json({
+      error: "Could not load bookings."
+    });
+  }
 });
 
-app.get('/api/calendar.ics', (req, res) => {
-  const filePath = path.join(__dirname, 'bookings.json');
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    const calendar = ical({ name: 'COORG Homestay Bookings' });
-    if (!err && data) {
-      try {
-        const bookings = JSON.parse(data);
-        bookings.forEach(b => {
-          calendar.createEvent({
-            start: new Date(b.checkIn),
-            end: new Date(b.checkOut),
-            summary: `Reserved: ${b.customerName || 'Guest'}`,
-            description: `Direct Booking via Website (${b.guests} Guests)`
-          });
-        });
-      } catch (e) {}
+app.get('/api/calendar.ics', async (req, res) => {
+  try {
+    console.log("CALENDAR EXPORT ROUTE HIT");
+
+    const { data: bookings, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .order('check_in', { ascending: true });
+
+    if (error) {
+      console.error(
+        "Could not load calendar bookings from Supabase:",
+        error.message
+      );
+
+      return res.status(500).send("Could not load bookings.");
     }
+
+    const calendar = ical({
+      name: 'COORG Homestay Bookings'
+    });
+
+    bookings.forEach(b => {
+      calendar.createEvent({
+        start: new Date(b.check_in),
+        end: new Date(b.check_out),
+        summary: `Reserved: ${b.customer_name || 'Guest'}`,
+        description: `Direct Booking via Website (${b.guests} Guests)`
+      });
+    });
+
     res.writeHead(200, {
       'Content-Type': 'text/calendar; charset=utf-8',
-      'Content-Disposition': 'attachment; filename="calendar.ics"',
+      'Content-Disposition': 'attachment; filename="calendar.ics"'
     });
+
     res.end(calendar.toString());
-  });
-});
 
-app.get('/api/booked-dates', (req, res) => {
-  console.log("BOOKED DATES ROUTE HIT");
-  const filePath = path.join(__dirname, 'bookings.json');
-  if (!fs.existsSync(filePath)) {
-    return res.json([]);
+  } catch (err) {
+    console.error("Calendar export error:", err.message);
+    res.status(500).send("Could not create calendar.");
   }
-  
-  const rawData = fs.readFileSync(filePath, 'utf8');
-  const bookings = rawData ? JSON.parse(rawData) : [];
-  
-  // Return list of booked date ranges
-  const bookedRanges = bookings.map(b => ({
-    checkIn: b.checkIn,
-    checkOut: b.checkOut
-  }));
-  
+});
+app.get('/api/booked-dates', async (req, res) => {
+  console.log("BOOKED DATES ROUTE HIT");
 
-  res.json(bookedRanges);
+  try {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('check_in, check_out')
+      .order('check_in', { ascending: true });
+
+    if (error) {
+      console.error(
+        "Could not load booked dates from Supabase:",
+        error.message
+      );
+
+      return res.status(500).json({
+        error: "Could not load booked dates."
+      });
+    }
+
+    const bookedRanges = data.map(row => ({
+      checkIn: row.check_in,
+      checkOut: row.check_out
+    }));
+
+    console.log("BOOKED RANGES FROM SUPABASE:", bookedRanges);
+
+    res.json(bookedRanges);
+
+  } catch (err) {
+    console.error("Booked dates error:", err.message);
+
+    res.status(500).json({
+      error: "Could not load booked dates."
+    });
+  }
 });
 
 // all your routes above this
