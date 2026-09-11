@@ -81,29 +81,51 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+// Fetch booked dates and disable them in the calendar
+fetch('https://coorg-premium-stay-4.onrender.com/api/booked-dates')
+  .then(res => {
+    if (!res.ok) {
+      throw new Error(`Server returned ${res.status}`);
+    }
+    return res.json();
+  })
+  .then(bookedRanges => {
+    console.log("BOOKED RANGES:", bookedRanges);
 
-  // Fetch blocked dates and update calendar instance
-  fetch('https://coorg-premium-stay-4.onrender.com/api/booked-dates')
-    .then(res => res.json())
-    .then(bookedRanges => {
-   const disabledDates = bookedRanges.flatMap(range => {
-  const dates = [];
-  let current = new Date(range.checkIn);
-  const end = new Date(range.checkOut);
+    const disabledDates = [];
 
-  while (current < end) {
-    dates.push(new Date(current));
-    current.setDate(current.getDate() + 1);
-  }
+    bookedRanges.forEach(range => {
+      // Keep dates in local calendar format — avoid timezone shifting
+      const startParts = range.checkIn.split("-");
+      const endParts = range.checkOut.split("-");
 
-  return dates;
-});
-      
-      fp.set('disable', disabledDates);
-      console.log("DISABLED DATES:", disabledDates);
-    })
-    .catch(err => console.error('Could not load booked dates:', err));
+      let current = new Date(
+        Number(startParts[0]),
+        Number(startParts[1]) - 1,
+        Number(startParts[2])
+      );
 
+      const end = new Date(
+        Number(endParts[0]),
+        Number(endParts[1]) - 1,
+        Number(endParts[2])
+      );
+
+      while (current < end) {
+        disabledDates.push(new Date(current));
+
+        current.setDate(current.getDate() + 1);
+      }
+    });
+
+    console.log("DISABLED DATES:", disabledDates);
+
+    fp.set("disable", disabledDates);
+    fp.redraw();
+  })
+  .catch(err => {
+    console.error("Could not load booked dates:", err);
+  });
   // Recalculate if guest count changes
   if (guestSelect) {
     guestSelect.addEventListener('change', updatePriceBreakdown);
