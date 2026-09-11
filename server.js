@@ -8,6 +8,8 @@ const ical = require('ical-generator').default;
 
 const app = express();
 
+app.use(cors());
+
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const { Resend } = require('resend');
